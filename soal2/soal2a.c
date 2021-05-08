@@ -7,8 +7,8 @@ int main()
 {
     key_t key = 1234;
   // int *value;
-    int (*value)[6];
-    int shmid = shmget(key, sizeof(int), IPC_CREAT | 0666);
+    int *value;
+    int shmid = shmget(key, sizeof(int)*24, IPC_CREAT | 0666);
     value = shmat(shmid, NULL, 0);
 
     int c, d, k, sum = 0;
@@ -60,8 +60,8 @@ int main()
   {
     for ( d = 0 ; d < 6 ; d++ )
     {
-      value[c][d] = multiply[c][d];
       printf("%d\t", multiply[c][d]);
+      value[c*6+d] = multiply[c][d];
     }
     printf("\n");
   }
