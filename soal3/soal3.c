@@ -38,14 +38,12 @@ int is_regular_file( char *path)
 char * get_filename_ext(char *filename) {
     char * extname = (char*)malloc(sizeof(char)* (PATH_MAX + PATH_MAX));
     memset(extname,0,sizeof(char)* (PATH_MAX + PATH_MAX));
-    char *dotted = strrchr(filename, '/');
-    //memmove(&dotted[0],&dotted[1],strlen(dotted) - 0);
-    if(dotted[0] == '.'){
+    char *dot = strrchr(filename, '.');
+    if(dot == filename){
         strcpy(extname,"Hidden");
         return extname;
     }
-    char *dot = strrchr(filename, '.');
-    if (!dot || dot == filename){
+    else if (!dot || dot == filename){
         strcpy(extname,"Unknown");
         return extname;
     }
@@ -72,7 +70,6 @@ void* checkFolderAndCopy(void* args){
     printf("moving %s to %s\n",filenow->filename,buffer);
     rename(filenow->filename,buffer);
     pthread_mutex_unlock(&bufferlock);
-    // remove(filenow->filename);
 }
 
 int ix = 0;
@@ -96,11 +93,10 @@ void listFilesRecursive(char *base, pthread_t *thread) {
             file_t * filenow = (file_t*)malloc(sizeof(file_t));
             if (dp->d_type == DT_REG)
             {
-                printf("SAMLEKOM!\n");
                 strcpy(filenow->filename, path);
-                strcpy(filenow->curDir,"/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal3");
+                strcpy(filenow->curDir,"/home/inez/sisop/soal-shift-sisop-modul-3-F01-2021/soal3");
                 printf("%s\n", path);
-                if (strcmp(path,"/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal3") != 0)
+                if (strcmp(path,"/home/inez/sisop/soal-shift-sisop-modul-3-F01-2021/soal3") != 0)
                 {
                     pthread_create(&thread[ix],NULL,checkFolderAndCopy,(void*)filenow);
                     sleep(1);
