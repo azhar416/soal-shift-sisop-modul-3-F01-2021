@@ -38,8 +38,9 @@ int is_regular_file( char *path)
 char * get_filename_ext(char *filename) {
     char * extname = (char*)malloc(sizeof(char)* (PATH_MAX + PATH_MAX));
     memset(extname,0,sizeof(char)* (PATH_MAX + PATH_MAX));
-    char *dot = strrchr(filename, '.');
-    if(dot == filename){
+    char *dotted = strchr(filename, '/');
+    char *dot = strchr(filename, '.');
+    if(strcmp(dot,filename)){
         strcpy(extname,"Hidden");
         return extname;
     }
