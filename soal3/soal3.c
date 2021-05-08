@@ -23,8 +23,8 @@ void tolowerstr(char * str){
 }
 
 typedef struct file{
-    char * curDir;
-    char * filename;
+    char curDir[1024];
+    char filename[1024];
 }file_t;
 
 
@@ -75,7 +75,7 @@ void* checkFolderAndCopy(void* args){
     // remove(filenow->filename);
 }
 
-int ix;
+int ix = 0;
 
 void listFilesRecursive(char *base, pthread_t *thread) {
     char path[1000];
@@ -96,9 +96,11 @@ void listFilesRecursive(char *base, pthread_t *thread) {
             file_t * filenow = (file_t*)malloc(sizeof(file_t));
             if (dp->d_type == DT_REG)
             {
-                strcpy(filenow->filename,path);
-                strcpy(filenow->curDir,"/sisop/soal-shift-sisop-modul-3-F01-2021/soal3");
-                if (strcmp(path,"/sisop/soal-shift-sisop-modul-3-F01-2021/soal3/soal3.c") != 0)
+                printf("SAMLEKOM!\n");
+                strcpy(filenow->filename, path);
+                strcpy(filenow->curDir,"/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal3");
+                printf("%s\n", path);
+                if (strcmp(path,"/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal3") != 0)
                 {
                     pthread_create(&thread[ix],NULL,checkFolderAndCopy,(void*)filenow);
                     sleep(1);
@@ -123,11 +125,13 @@ int main(int argc, char * argv[]){
         //pthread_t copy_thread[argc];
         for(int i=2;i<argc;i++){
             file_t * filenow = (file_t*)malloc(sizeof(file_t));
-            filenow->curDir = curDir;
+            // filenow->curDir = curDir;
+            strcpy(filenow->curDir, curDir);
             char * copy = (char*)malloc(sizeof(char)*strlen(argv[i]));
             memset(copy,0,sizeof(char)*strlen(argv[i]));
             strcpy(copy,argv[i]);
-            filenow->filename = copy;
+            // filenow->filename = copy;
+            strcpy(filenow->filename, copy);
 
             int iret = pthread_create(&copy_thread[i],NULL,checkFolderAndCopy,(void*)filenow);
             // if(is_regular_file(argv[i])){
