@@ -79,7 +79,6 @@ void exec1() {
   // exec didn't work, exit
   perror("bad exec ps");
   _exit(1);
-  printf("\n");
 }
 
 void exec2() {
@@ -93,13 +92,12 @@ void exec2() {
   close(pipe2[0]);
   close(pipe2[1]);
   // exec
-  //execlp("sort", "-nrk", 3.3, NULL);
-  char *argv[]= {"sort","-nrk","3.3", NULL};
-  execv("/bin/sort",argv);
+  execlp("sort", "sort", "-nrk", "3.3", NULL);
+  //char *argv[]= {"sort","-nrk","3.3", NULL};
+  //execv("/bin/sort",argv);
   // exec didn't work, exit
   perror("bad exec grep root");
   _exit(1);
-  printf("\n\n");
 }
 
 void exec3() {
@@ -110,11 +108,10 @@ void exec3() {
   close(pipe2[0]);
   close(pipe2[1]);
   // exec
-  //execlp("head", "-5", NULL);
-  char *argv[]= {"head","-5", NULL};
-  execv("/bin/head",argv);
+  execlp("head", "head", "-5", NULL);
+  //char *argv[]= {"head","-5", NULL};
+  //execv("/bin/head",argv);
   // exec didn't work, exit
   perror("bad exec grep sbin");
   _exit(1);
-  printf("\n\n");
 }
