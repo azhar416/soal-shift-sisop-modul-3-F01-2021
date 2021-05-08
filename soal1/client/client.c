@@ -60,26 +60,25 @@ int main(int argc, char const *argv[]) {
         {
             while (1)
             {
-                char aut[1024];
-                valread = read(sock, buffer, 1024);
-                printf("%s", buffer);
-                scanf("%s", username);
-                write(sock, username, 1024);
+                char aut[1024] = {0};
+                while (strcmp(aut, "") == 0)
+                {
+                    // printf("masuk 2\n");
+                    valread = read(sock, buffer, 1024);
+                    printf("%s", buffer);
+                    scanf("%s", username);
+                    write(sock, username, 1024);
 
-                valread = read(sock, buffer, 1024);
-                printf("%s", buffer); 
-                scanf("%s", password);
-                write(sock, password, 1024);
+                    valread = read(sock, buffer, 1024);
+                    printf("%s", buffer); 
+                    scanf("%s", password);
+                    write(sock, password, 1024);
 
-                // while(aut != 0)
-                // {
-
-                // }
-
-                valread = read(sock, aut, 1024);
+                    valread = read(sock, aut, 1024);
+                }
                 while (!strcmp(aut, "1"))
                 {
-                    printf("\nLOGIN BERASIL\n");    
+                    printf("\nLOGIN BERASIL\n\n");    
                     valread = read(sock, buffer, 1024);
                     printf("%s", buffer);
                     memset(buffer, '0', 1024);
@@ -106,9 +105,31 @@ int main(int argc, char const *argv[]) {
                         printf("%s", buffer);
                         scanf("%s", kirim);
                         write(sock, kirim, 1024);
-                        memset(kirim, '0', 1024);
+                        // memset(kirim, '0', 1024); // file.extensi
+                        printf("%s", kirim);
+
+                        FILE* file = fopen(kirim, "rb");
+                        char data[1024] = {0};
+
+                        while(fgets(data, 1024, file) != NULL)
+                        {
+                            write(sock, data, strlen(data));
+                            memset(data, '0', 1024);
+                        }
+                        fclose(file);
+
                     }
-                    break;
+                    else if (!strcmp(choice, "see"))
+                    {
+                        //
+                        memset(buffer, '0', 1024);
+                        read(sock, buffer, 1024);
+                        printf("%s", buffer);
+                        memset(buffer, '0', 1024);
+                    }
+                    else if (!strcmp(choice, "exit"))
+                        break;
+
                 }
             }
 
