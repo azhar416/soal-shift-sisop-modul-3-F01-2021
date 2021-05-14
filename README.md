@@ -129,6 +129,7 @@ void exec2() {
 }
 ```
 Pada `void exec3()` program menampilkan 5 data teratas yang memakan resource
+```
 void exec3() {
   // input from pipe2
   dup2(pipe2[0], 0);
