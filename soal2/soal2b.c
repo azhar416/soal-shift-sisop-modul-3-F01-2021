@@ -11,25 +11,33 @@ int *value;
 pthread_t thread; 
 
 typedef struct isi{
-    int isi_lama;
-    int input_baru;
+    long long isi_lama;
+    long long input_baru;
 }isi1;
 
 unsigned long long factorial(unsigned long long x, int data){  
-    int hasil = x;
+    long long hasil = x;
         if (x ==1){
             return 1;
         }
-        if( x==2){
+        else if( x==2){
             hasil *= ((x-1));
         }
-        for(int a=1;a<data;a++){
-            if(x-a<=0)
-            {
-                hasil *=1;
+        else if(data>x){
+            for(long long a=1;a<x;a++){
+                hasil*= (x-a);
             }
-            else{
-                hasil *= (x-a);
+        }
+        else{
+            for(long long a=1;a<data;a++){
+                if(x-a==0)
+                {
+                    //hasil *=1;
+                    continue;
+                }
+                else if(x-a >0){
+                    hasil *= (x-a);
+                }
             }
         }
     //}
