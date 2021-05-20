@@ -169,6 +169,7 @@ void *connection_handler(void *socket_desc)
 				bzero(menu, 1024);
 				sprintf(menu, "LOGIN MENU\nadd\nsee\ndownload [namafile]\ndelete\nexit\nCHOICE : \e[s\n\e[u");
 				write(sock, menu, 1024);
+				// printf("flag\n");
 				valread = read(sock, choice, 1024);
 				if (valread < 1) return 0;
 

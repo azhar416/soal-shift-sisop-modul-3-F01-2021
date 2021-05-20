@@ -68,11 +68,13 @@ int main(int argc, char const *argv[]) {
                 while (strcmp(aut, "") == 0)
                 {
                     // printf("masuk 2\n");
+                    bzero(buffer, 1024);
                     valread = read(sock, buffer, 1024);
                     printf("%s", buffer);
                     scanf(" %[^\n]s", username);
                     write(sock, username, 1024);
 
+                    bzero(buffer, 1024);
                     valread = read(sock, buffer, 1024);
                     printf("%s", buffer); 
                     scanf(" %[^\n]s", password);
@@ -82,7 +84,8 @@ int main(int argc, char const *argv[]) {
                 }
                 while (!strcmp(aut, "1"))
                 {
-                    printf("\nLOGIN BERASIL\n\n");    
+                    printf("\nLOGIN BERASIL\n\n");
+                    bzero(buffer, 1024);    
                     valread = read(sock, buffer, 1024);
                     printf("%s", buffer);
                     // memset(buffer, '0', 1024);
@@ -185,8 +188,11 @@ int main(int argc, char const *argv[]) {
                         printf("%s\n", buffer);
                         bzero(buffer, 1024);
                     }
-                    else if (!strcmp(choice, "exit"))
-                        break;
+                    // else if (!strcmp(choice, "exit"))
+                    // {
+                        
+                    //     break;
+                    // }
 
                 }
             }
