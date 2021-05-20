@@ -93,10 +93,11 @@ void *connection_handler(void *socket_desc)
 	{
 		sprintf(menu, "\nMain Menu\n1. REGISTER\n2. LOGIN\nCHOICE : \e[s\n\e[u");
 		write(sock, menu, 1024); 
-		memset(menu, '0', 1024);
+		// memset(menu, '0', 1024);
+		bzero(menu, 1024);
 
 		valread = read(sock, choice, 1024); 
-		if (valread == 0) return 0;
+		if (valread < 1) return 0;
 
 		// printf("\nCHOICE : %s\n", choice);
 		if (!(strcmp(choice, "1")))
@@ -105,15 +106,17 @@ void *connection_handler(void *socket_desc)
 			// printf("Masuk 1\n");
 			sprintf(menu, "Username : \e[s\n\e[u");
 			write(sock, menu, 1024); 
-			memset(menu, '0', 1024);
+			// memset(menu, '0', 1024);
+			bzero(menu, 1024);
 			valread = read(sock, username, 1024);
-			if (valread == 0) return 0;
+			if (valread < 1) return 0;
 
 			sprintf(menu, "Password : \e[s\n\e[u");
 			write(sock, menu, 1024); 
-			memset(menu, '0', 1024);
+			// memset(menu, '0', 1024);
+			bzero(menu, 1024);
 			valread = read(sock, password, 1024);
-			if (valread == 0) return 0;
+			if (valread < 1) return 0;
 
 			fprintf(fp, "%s:%s\n", username, password);
 			fclose(fp);
@@ -124,21 +127,24 @@ void *connection_handler(void *socket_desc)
 			FILE* fp = fopen("akun.txt", "r");
 			while (aut == "0")
 			{
-				memset(menu, '0', 1024);
+				// memset(menu, '0', 1024);
+				bzero(menu, 1024);
 				// printf("Masuk 2\n");
 				sprintf(menu, "Username : \e[s\n\e[u");
 				// printf("%s\n", menu);
 				int ler = write(sock, menu, 1024);
 				// if (ler == 0) printf("write\n");
-				memset(menu, '0', 1024);
+				// memset(menu, '0', 1024);
+				bzero(menu, 1024);
 				valread = read(sock, username, 1024);
-				if (valread == 0) return 0;
+				if (valread < 1) return 0;
 
 				sprintf(menu, "Password : \e[s\n\e[u");
 				write(sock, menu, 1024); 
-				memset(menu, '0', 1024);
+				// memset(menu, '0', 1024);
+				bzero(menu, 1024);
 				valread = read(sock, password, 1024); 
-				if (valread == 0) return 0;
+				if (valread < 1) return 0;
 
 				while (fgets(buffer, 1024, fp) != NULL && aut == "0") 
 				{
@@ -153,17 +159,18 @@ void *connection_handler(void *socket_desc)
 						// printf("MASUK!!!\n");
 						aut = "1";
 						write(sock, aut, 1024);
-						printf("%s", aut);		
+						// printf("%s", aut);
 					}
 				}
 			}
 			while (aut == "1")
 			{
-				memset(menu, '0', 1024);
-				sprintf(menu, "LOGIN MENU\nadd\nsee\nexit\nCHOICE : \e[s\n\e[u");
+				// memset(menu, '0', 1024);
+				bzero(menu, 1024);
+				sprintf(menu, "LOGIN MENU\nadd\nsee\ndownload [namafile]\ndelete\nexit\nCHOICE : \e[s\n\e[u");
 				write(sock, menu, 1024);
 				valread = read(sock, choice, 1024);
-				if (valread == 0) return 0;
+				if (valread < 1) return 0;
 
 				if (!strcmp(choice, "add"))
 				{
@@ -174,43 +181,52 @@ void *connection_handler(void *socket_desc)
 
 					sprintf(publisher, "Publisher : \e[s\n\e[u");
 					write(sock, publisher, 1024);
-					memset(publisher, '0', 1024);
+					// memset(publisher, '0', 1024);
+					bzero(publisher, 1024);
 					valread = read(sock, publisher, 1024);
-					if (valread == 0) return 0;
+					if (valread < 1) return 0;
 					
 					sprintf(tahun, "Tahun Publikasi : \e[s\n\e[u");
 					write(sock, tahun, 1024);
-					memset(tahun, '0', 1024);
+					// memset(tahun, '0', 1024);
+					bzero(tahun, 1024);
 					valread = read(sock, tahun, 1024);
-					if (valread == 0) return 0;
+					if (valread < 1) return 0;
 
 					sprintf(path, "Filepath : \e[s\n\e[u");
 					write(sock, path, 1024);
-					memset(path, '0', 1024);
+					// memset(path, '0', 1024);
+					bzero(path, 1024);
 					valread = read(sock, path, 1024);
-					if (valread == 0) return 0;
+					if (valread < 1) return 0;
 					
 					// transfer file
 					mkdir("FILES", 0777);
 					char pathServer[1024];
-					sprintf(pathServer, "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal3/server/FILES/");
+					sprintf(pathServer, "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/server/FILES/");
 					strcat(pathServer, path);
 					FILE* file_create = fopen(pathServer, "w");
 
-					memset(buffer, '0', 1024);
+					// memset(buffer, '0', 1024);
+					bzero(buffer, 1024);
 					valread = read(sock, buffer, 1024);
-					if (valread == 0) return 0;
+					if (valread < 1) return 0;
 					fprintf(file_create, "%s", buffer);
 					// fprintf(file_create, "\n");
 
 					fclose(file_create);
 
-					memset(buffer, '0', 1024);
+					// memset(buffer, '0', 1024);
+					bzero(buffer, 1024);
 					sprintf(buffer, "\nFile Terkirim\n");
 					write(sock, buffer, 1024);
 
 					fprintf(fp_1, "%s\t%s\t%s\n", publisher, tahun, pathServer);
 					fclose(fp_1);
+
+					FILE* log = fopen("running.log", "a");
+					fprintf(log, "Tambah : %s %s\n", path, username);
+					fclose(log);
 				}
 				else if (!strcmp(choice, "see"))
 				{
@@ -224,7 +240,7 @@ void *connection_handler(void *socket_desc)
 					strcpy(buffer, "");
 					while (fgets(line, 1024, fcek))
 					{
-						// "/home/azhar416/sisop..../soal3/
+						// "/home/azhar416/sisop..../soal1/
 						// printf("ler\n");
 						// if (bukanawal) 
 						strcat(buffer, "\n\n");
@@ -278,14 +294,246 @@ void *connection_handler(void *socket_desc)
 						strcat(buffer, thn);
 						strcat(buffer, "\nEkstensi File : ");
 						strcat(buffer, extensi);
-						strcat(buffer, "\nFile Path : ");
+						strcat(buffer, "File Path : ");
 						strcat(buffer, p_path);
 
 						bukanawal++;
 					}
 					// printf("%s", buffer);
 					write(sock, buffer, 1024);
-					memset(buffer, '0', 1024);
+					bzero(buffer, 1024);
+					// memset(buffer, '0', 1024);
+				}
+				else if (!strncmp(choice, "download", 8))
+				{
+					bzero(buffer, 1024);
+					char temp[1024], buku[1024];
+					strcpy(temp, choice);
+					// printf("CHOICE : %s\n", choice);
+					char* save = temp;
+					char* token;
+					for (int i = 0; token = strtok_r(save, " ", &save); i++)
+                    {
+                        bzero(buku, 1024);
+                        strcpy(buku, token);
+                    }
+					int found = 0;
+					printf("buku : %s\n", buku);
+					
+					if (!strcmp(buku, ""))
+					{
+						strcpy(buffer, "masukkan nama buku");
+						write(sock, buffer, 1024);
+						bzero(buffer, 1024);
+					}
+					else
+					{
+						char pathserver[1024] = "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/server/FILES/";
+						strcat(pathserver, buku);
+						printf("pathserver : %s\n", pathserver);
+
+						FILE* file = fopen("files.tsv", "r");
+						char line[1024];
+
+						while(fgets(line, 1024, file))
+						{
+							char temp[1024] = {0}, data[1024] = {0};
+							strcpy(temp, line);
+							char* t;
+							char* simpen = temp;
+							for (int i = 0; t = strtok_r(simpen, "\t", &simpen); i++)
+							{
+								strncpy(data, t, strlen(t) - 1);
+							}
+							printf("data : %s\n", data);
+							if (!strcmp(pathserver, data))
+							{
+								found = 1;
+								break;
+							}
+						}
+						if (found)
+						{
+							FILE* ffile = fopen(pathserver, "rb");
+							char dats[1024] = {0};
+							
+							while (fgets(dats, 1024, ffile) != NULL)
+							{
+								write(sock, dats, strlen(dats));
+								bzero(dats, 1024);
+							}
+							fclose(ffile);
+
+						}
+						else
+						{
+							strcpy(buffer, "buku tidak ditemukan");
+							write(sock, buffer, 1024);
+							bzero(buffer, 1024);
+						}
+
+					}
+				}
+				else if (!strncmp(choice, "delete", 6))
+				{
+					bzero(buffer, 1024);
+					char temp[1024] = {0}, buku[1024]= {0};
+					strcpy(temp, choice);
+					char* token;
+					char* save = temp;
+					for (int i = 0; token = strtok_r(save, " ", &save); i++)
+					{
+						strcpy(buku, token);
+					}
+					char pathserver[1024] = "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/server/FILES/";
+					strcat(pathserver, buku);
+
+					if (!strcmp(buku, ""))
+					{
+						strcpy(buffer, "masukkan nama buku");
+					}
+					else
+					{
+						FILE* cekfile = fopen(pathserver, "r");
+						if (!cekfile)
+						{
+							strcpy(buffer, "buku tidak ditemukan");
+						}
+						else
+						{
+							FILE* file1 = fopen("files.tsv", "r");
+							FILE* file2 = fopen("temp.tsv", "w");
+
+							char line[1024] = {0};
+							while (fgets(line, 1024, file1))
+							{
+								char motong[1024], pathbukunya[1024];
+								strcpy(motong, line);
+								char* potong = motong;
+								char* token;
+								for (int i = 0; token = strtok_r(potong, "\t", &potong); i++)
+								{
+									strncpy(pathbukunya, token, strlen(token) - 1);
+								}
+								char templine[1024];
+								strcpy(templine, line);
+								if (strcmp(pathserver, pathbukunya))
+								{
+									printf("pathserver : %s\npathbukunya : %s\n\n", pathserver, pathbukunya);
+									fprintf(file2, "%s", templine);
+								}
+							}
+							fclose(file1);
+							fclose(file2);
+							remove("files.tsv");
+							rename("temp.tsv", "files.tsv");
+
+							char old[1024] = "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/server/FILES/old-";
+							strcat(old, buku);
+							rename(pathserver, old);
+
+							strcpy(buffer, "buku sukses dihapus");
+						}
+						fclose(cekfile);
+
+						FILE* log = fopen("running.log", "a")		;
+						fprintf(log, "Hapus : %s %s\n", buku, username);
+						fclose(log);				
+					}
+					write(sock, buffer, 1024);
+					bzero(buffer, 1024);
+				}
+				else if (!strncmp(choice, "find", 4))
+				{
+					char temp[1024], namabuku[1024];
+					strcpy(temp, choice);
+					char* p_temp = temp;
+					char* token;
+					for (int i = 0; token = strtok_r(p_temp, " ", &p_temp); i++)
+					{
+						strcpy(namabuku, token);
+					}
+					if (!strcmp(namabuku, ""))
+					{
+						strcpy(buffer, "masukkan nama buku");
+					}
+					else
+					{
+						FILE* fcek = fopen("files.tsv", "r");
+
+						char 	line[1024] = {0}, pub[1024] = {0}, thn[1024] = {0}, p_path[1024] = {0}, 
+								pathTemp[1024] = {0}, namafile[1024] = {0}, nama[1024] = {0}, extensi[1024] = {0};
+						int bukanawal = 0;
+						strcpy(buffer, "");
+						while (fgets(line, 1024, fcek))
+						{
+							// "/home/azhar416/sisop..../soal1/
+							// printf("ler\n");
+							// if (bukanawal) 
+							strcat(buffer, "\n\n");
+
+							// ngambil tiap tab
+							char* token;
+							char samlekom1[1024];
+							strcpy(samlekom1, line);
+							char* kumsalam = samlekom1;
+							for (int i = 0; token = strtok_r(kumsalam, "\t", &kumsalam); i++)
+							{
+								if (i == 0) 
+									strcpy(pub, token);
+								else if (i == 1) 
+									strcpy(thn, token);
+								else if (i == 2) 
+									strcpy(p_path, token);
+							}
+							strcpy(pathTemp, p_path);
+
+							// ngambil namafile.extensi
+							char samlekom2[1024];
+							strcpy(samlekom2, pathTemp);
+							kumsalam = samlekom2;
+							for (int i = 0; token = strtok_r(kumsalam, "/", &kumsalam); i++)
+							{
+								strcpy(namafile, token);
+							}
+
+							// misah namafile ama extensi
+							char samlekom3[1024];
+							strcpy(samlekom3, namafile);
+							kumsalam = samlekom3;
+							for (int i = 0; token = strtok_r(kumsalam, ".", &kumsalam); i++)
+							{
+								if (i == 0) 
+									strcpy(nama, token);
+								else if (i == 1) 
+								{
+									strcpy(extensi, ".");
+									strcat(extensi, token);
+								}
+							}
+							// printf("%s\n%s\n%s\n%s\n%s\n", nama, pub, thn, extensi, p_path);
+							if (!strstr(nama, namabuku)) continue;
+
+							strcat(buffer, "Nama : ");
+							strcat(buffer, nama);
+							strcat(buffer, "\nPublisher : ");
+							strcat(buffer, pub);
+							strcat(buffer, "\nTahun Publishing : ");
+							strcat(buffer, thn);
+							strcat(buffer, "\nEkstensi File : ");
+							strcat(buffer, extensi);
+							strcat(buffer, "\nFile Path : ");
+							strcat(buffer, p_path);
+
+							bukanawal++;
+						}
+						if (!bukanawal)
+						{
+							strcpy(buffer, "buku tidak ditemukan");
+						}
+					}
+					write(sock, buffer, 1024);
+					bzero(buffer, 1024);
 				}
 			}
 

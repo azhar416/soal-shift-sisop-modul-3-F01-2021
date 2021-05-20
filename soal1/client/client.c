@@ -40,20 +40,24 @@ int main(int argc, char const *argv[]) {
         char password[1024];
 		valread = read(sock, buffer, 1024);
 		printf("%s", buffer);
-        memset(buffer, '0', 1024);
-
-		scanf("%s", choice);
+        // memset(buffer, '0', 1024);
+        bzero(buffer, 1024);
+        // getchar();
+        bzero(choice, 1024);
+		scanf(" %[^\n]s", choice);
+        // getchar();
+        // printf("%s\n", choice);
         write(sock, choice, strlen(choice));
         if (!(strcmp(choice, "1")))
         {
             valread = read(sock, buffer, 1024);
 		    printf("%s", buffer);
-            scanf("%s", username);
+            scanf(" %[^\n]s", username);
             write(sock, username, 1024);
 
             valread = read(sock, buffer, 1024);
 		    printf("%s", buffer); 
-            scanf("%s", password);
+            scanf(" %[^\n]s", password);
             write(sock, password, 1024);
         }
         else if (!(strcmp(choice, "2")))
@@ -66,12 +70,12 @@ int main(int argc, char const *argv[]) {
                     // printf("masuk 2\n");
                     valread = read(sock, buffer, 1024);
                     printf("%s", buffer);
-                    scanf("%s", username);
+                    scanf(" %[^\n]s", username);
                     write(sock, username, 1024);
 
                     valread = read(sock, buffer, 1024);
                     printf("%s", buffer); 
-                    scanf("%s", password);
+                    scanf(" %[^\n]s", password);
                     write(sock, password, 1024);
 
                     valread = read(sock, aut, 1024);
@@ -81,25 +85,32 @@ int main(int argc, char const *argv[]) {
                     printf("\nLOGIN BERASIL\n\n");    
                     valread = read(sock, buffer, 1024);
                     printf("%s", buffer);
-                    memset(buffer, '0', 1024);
-                    scanf("%s", choice);
+                    // memset(buffer, '0', 1024);
+                    bzero(buffer, 1024);
+                    // getchar();
+                    scanf(" %[^\n]s", choice);
+                    // getchar();
                     write(sock, choice, 1024);
                     if (!strcmp(choice, "add"))
                     {
                         char kirim[1024] = {0};
                         valread = read(sock, buffer, 1024);
                         printf("%s", buffer);
-                        memset(buffer, '0', 1024);
+                        // memset(buffer, '0', 1024);
+                        bzero(buffer, 1024);
                         scanf("%s", kirim);
                         write(sock, kirim, 1024);
-                        memset(kirim, '0', 1024);
+                        // memset(kirim, '0', 1024);
+                        bzero(buffer, 1024);
                         
                         valread = read(sock, buffer, 1024);
                         printf("%s", buffer);
-                        memset(buffer, '0', 1024);
+                        // memset(buffer, '0', 1024);
+                        bzero(buffer, 1024);
                         scanf("%s", kirim);
                         write(sock, kirim, 1024);
-                        memset(kirim, '0', 1024);
+                        // memset(kirim, '0', 1024);
+                        bzero(buffer, 1024);
                         
                         valread = read(sock, buffer, 1024);
                         printf("%s", buffer);
@@ -114,18 +125,65 @@ int main(int argc, char const *argv[]) {
                         while(fgets(data, 1024, file) != NULL)
                         {
                             write(sock, data, strlen(data));
-                            memset(data, '0', 1024);
+                            // memset(data, '0', 1024);
+                            bzero(data, 1024);
                         }
                         fclose(file);
 
                     }
                     else if (!strcmp(choice, "see"))
                     {
-                        //
-                        memset(buffer, '0', 1024);
+                        bzero(buffer, 1024);
                         read(sock, buffer, 1024);
                         printf("%s", buffer);
-                        memset(buffer, '0', 1024);
+                        bzero(buffer, 1024);
+                    }
+                    else if (!strncmp(choice, "download", 8))
+                    {
+                        // printf("flag1\n");
+                        char buku[1024];
+                        strcpy(buku, choice);
+                        char* token;
+                        char* simpen = buku;
+                        for (int i = 0; token = strtok_r(simpen, " ", &simpen); i++)
+                        {
+                            // printf("flag2\n");
+                            bzero(buffer, 1024);
+                            strcpy(buffer, token);
+                        }
+                        char pathclient[1024] = "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/client/";
+                        strcat(pathclient, buffer);
+                        
+                        bzero(buffer, 1024);
+                        if (strcmp(buffer, "buku tidak ditemukan") && strcmp(buffer, "masukkan nama buku"))
+                        {
+                            FILE* file = fopen(pathclient, "w");
+                    
+                            valread = read(sock, buffer, 1024);
+                            fprintf(file, "%s", buffer);
+                     
+
+                            fclose(file);
+                            printf("buku telah diunduh\n\n");
+                        }
+                        else
+                        {
+                            printf("%s\n", buffer);
+                        }
+                    }
+                    else if (!strncmp(choice, "delete", 6))
+                    {
+                        bzero(buffer, 1024);
+                        valread = read(sock, buffer, 1024);
+                        printf("%s\n", buffer);
+                        bzero(buffer, 1024);
+                    }
+                    else if (!strncmp(choice, "find", 4))
+                    {
+                        bzero(buffer, 1024);
+                        read(sock, buffer, 1024);
+                        printf("%s\n", buffer);
+                        bzero(buffer, 1024);
                     }
                     else if (!strcmp(choice, "exit"))
                         break;
