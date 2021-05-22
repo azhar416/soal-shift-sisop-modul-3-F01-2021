@@ -7,7 +7,29 @@ Crypto (kamu) adalah teman Loba. Suatu pagi, Crypto melihat Loba yang sedang kew
 
 ### A. Membuat program perkalian matrix (4x3 dengan 3x6) dan menampilkan hasilnya. Matriks nantinya akan berisi angka 1-20 (tidak perlu dibuat filter angka).
 
-Pada kasus ini kami mendklarasikan matriks A (4*3) dan B(3*6) untuk dan menampilkan data tersebut menggunakan `for`. Berikut adalah implementasi untuk hasil:
+Pada kasus ini kami mendklarasikan matriks A (4*3) dan B(3*6) untuk melakukan input dan menampilkan data tersebut menggunakan `for`. 
+Berikut adalah implementasi untuk input data:
+```
+  printf("Masukan data Matrix:\n");
+  for (  c = 0 ; c < 4 ; c++ )
+  {
+     for ( d = 0 ; d < 3 ; d++ )
+     {
+       scanf("%d", &first[c][d]);
+     }
+  }
+  printf("Masukan data Matrix 2:\n");
+  for ( c = 0 ; c < 3 ; c++ )
+  {
+    for ( d = 0 ; d < 6 ; d++ )
+    {
+      scanf("%d", &second[c][d]);
+    }
+  }
+```
+
+
+Berikut adalah implementasi untuk hasil:
 
 ```
 for ( c = 0 ; c < 4 ; c++ )
@@ -49,24 +71,33 @@ Pada fungsi faktorial akan dilakukan sesuai dengan kiteria soal.
 Berikut untuk fungsi perhitungan nya:
 ```
 unsigned long long factorial(unsigned long long x, int data){  
-    int hasil = x;
+    long long hasil = x;
         if (x ==1){
             return 1;
         }
-        if( x==2){
+        else if( x==2){
             hasil *= ((x-1));
         }
-        for(int a=1;a<data;a++){
-            if(x-a<=0)
-            {
-                hasil *=1;
+        else if(data>x){
+            for(long long a=1;a<x;a++){
+                hasil*= (x-a);
             }
-            else{
-                hasil *= (x-a);
+        }
+        else{
+            for(long long a=1;a<data;a++){
+                if(x-a==0)
+                {
+                    //hasil *=1;
+                    continue;
+                }
+                else if(x-a >0){
+                    hasil *= (x-a);
+                }
             }
         }
     //}
     return hasil;
+}
 }
 ```
 Pada penggunaan fungsi void diberikan beberapa kiteria mengenai data struct yaitu saat `isi_lama` dan `input_baru` berisi nol. Maka data akan langsung menampilkan nol.
