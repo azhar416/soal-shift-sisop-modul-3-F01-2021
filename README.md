@@ -804,6 +804,9 @@ Jika path yang ditemukan masih berupa folder maka akan diabaikan dan dilakukan r
 ```
 Apabila argumen yang diberikan yaitu -f dan path nya sesuai maka akan dimasukkan dalam thread dan menjalankan fungsi **checkFolderAndCopy**. Thread akan dijalankan bersamaan dengan pthread_join.
 
+Output :
+![](screenshoot/soal3/3a.png)
+
 ### B. Program juga dapat menerima opsi -d untuk melakukan pengkategorian pada suatu directory. Namun pada opsi -d ini, user hanya bisa memasukkan input 1 directory saja, tidak seperti file yang bebas menginput file sebanyak mungkin. 
 ```c
     else if(strcmp(argv[1],"-d")==0){
@@ -834,6 +837,12 @@ Apabila argumen yang diberikan yaitu -f dan path nya sesuai maka akan dimasukkan
 ```
 Apabila argumen yang diberikan yaitu -d dan path nya sesuai maka akan dimasukkan dalam thread dan menjalankan fungsi **listFilesRecursive** untuk menyimpan path dalam array. Nantinya, elemen pada array tersebut akan dibuatkan thread dan menjalankan fungsi **checkFolderAndCopy**.
 
+Output :
+Sebelum menjalankan perintah -d
+![](screenshoot/soal3/3b.1.png)
+File dalam folder test dikategorikan lalu dipindahkan ke folder soal3
+![](screenshoot/soal3/3b.2.png)
+
 ### C. Program ini menerima opsi *. Opsi ini akan mengkategorikan seluruh file yang ada di working directory ketika menjalankan program C tersebut.
 ```c
     else if(strcmp(argv[1],"*")==0){
@@ -848,7 +857,16 @@ Apabila argumen yang diberikan yaitu -d dan path nya sesuai maka akan dimasukkan
 ```
 Apabila argumen yang diberikan yaitu * maka akan menyimpan path current working directory. Lalu menjalankan proses eperti nomor 3b yaitu memanggil fungsi **listFilesRecursive** untuk menyimpan path dalam array. Nantinya, elemen pada array tersebut akan dibuatkan thread dan menjalankan fungsi **checkFolderAndCopy**.
 
+Output :
+Sebelum menjalankan perintah *
+![](screenshoot/soal3/3c.1.png)
+File dalam current working directory yaitu soal3.c dan soal3 dipindahkan ke folder sesuai kategorinya
+![](screenshoot/soal3/3c.2.png)
+
 ### D. dan E.
 Untuk kedua sub nomor ini sudah dijelaskan pada penjelasan diatas.
+Output :
+File hidden dipindahkan ke folder Hidden dan file yang tidak memiliki ekstensi dipindahkan ke folder Unknown
+![](screenshoot/soal3/3d.png)
 
 
