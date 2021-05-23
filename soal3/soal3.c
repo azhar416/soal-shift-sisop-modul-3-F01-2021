@@ -37,19 +37,24 @@ int is_regular_file( char *path)
 
 char * get_filename_ext(char *filename) {
     char * extname = (char*)malloc(sizeof(char)* (PATH_MAX + PATH_MAX));
-    memset(extname,0,sizeof(char)* (PATH_MAX + PATH_MAX));
+    memset(extname,'\0',sizeof(char)* (PATH_MAX + PATH_MAX));
     char *dot = strchr(filename, '.');
-    if(strcmp(dot,filename)){
+    char hidden[1000];
+    char *dotted = strrchr(filename, '/');
+    strcpy(hidden, dotted);
+    if(hidden[1]=='.'){
         strcpy(extname,"Hidden");
         return extname;
     }
-    else if (!dot || dot == filename){
+    else if (!dot){
         strcpy(extname,"Unknown");
         return extname;
     }
-    strcpy(extname,dot+1);
-    tolowerstr(extname);
-    return extname;
+    else {
+        strcpy(extname,dot+1);
+        tolowerstr(extname);
+        return extname;
+    }
 }
 
 void* checkFolderAndCopy(void* args){

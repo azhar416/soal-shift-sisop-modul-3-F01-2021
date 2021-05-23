@@ -175,3 +175,180 @@ void exec3() {
   _exit(1);
 }
 ```
+
+## Soal Nomor 3
+Seorang mahasiswa bernama Alex sedang mengalami masa gabut. Di saat masa gabutnya, ia memikirkan untuk merapikan sejumlah file yang ada di laptopnya. Karena jumlah filenya terlalu banyak, Alex meminta saran ke Ayub. Ayub menyarankan untuk membuat sebuah program C agar file-file dapat dikategorikan. Program ini akan memindahkan file sesuai ekstensinya ke dalam folder sesuai ekstensinya yang folder hasilnya terdapat di working directory ketika program kategori tersebut dijalankan.
+
+Berikut terdapat definisi struct file yang berisis array of char `curDir` untuk menyimpan nama direktori dan `filename` untuk menyimpan nama file
+```c
+typedef struct file{
+    char curDir[1024];
+    char filename[1024];
+}file_t;
+```
+
+### Penyelesaian no 3a, 3b, 3c : membuat fungsi untuk memeriksa tipe file/direktori, dan untuk mengkategorikan file dalam direktori.
+
+Untuk penyelesaian no 3 ada 2 fungsi yang digunakan yaitu untuk cek tipe file atau direktori dan untuk mengkategorikan file. Terdapat *is_regular_file* untuk memeriksa apakah file nya merupakan file regular atau bukan 
+```c
+int is_regular_file( char *path)
+{
+    struct stat path_stat;
+    stat(path, &path_stat);
+    return S_ISREG(path_stat.st_mode);
+}
+```
+
+*Fungsi untuk mendapatkan extension* 
+```c
+char * get_filename_ext(char *filename) {
+    char * extname = (char*)malloc(sizeof(char)* (PATH_MAX + PATH_MAX));
+    memset(extname,'\0',sizeof(char)* (PATH_MAX + PATH_MAX));
+    char *dot = strchr(filename, '.');
+    char hidden[1000];
+    char *dotted = strrchr(filename, '/');
+    strcpy(hidden, dotted);
+    if(hidden[1]=='.'){
+        strcpy(extname,"Hidden");
+        return extname;
+    }
+    else if (!dot){
+        strcpy(extname,"Unknown");
+        return extname;
+    }
+    else {
+        strcpy(extname,dot+1);
+        tolowerstr(extname);
+        return extname;
+    }
+}
+```
+* Mendapatkan ekstensi yang akan digunakan sebagai nama folder. *strchr* akan mengembalikan nilai dimana "." pertama ditemukan untuk dipotong
+```c
+char *dot = strchr(filename, '.');
+```
+* Mendapatkan ekstensi yang akan digunakan sebagai nama folder. *strrchr* akan mengembalikan nilai dimana "/" pertama ditemukan dari belakang untuk dipotong 
+```c
+char *dotted = strrchr(filename, '/');
+```
+
+Soal meminta untuk mengkategorikan file hidden dalam folder Hidden sedangkan file yang tidak memiliki extension akan dimasukkan ke folder Unknown.
+* Untuk mengkategorikan file Hidden
+```c
+  strcpy(hidden, dotted);
+    if(hidden[1]=='.'){
+        strcpy(extname,"Hidden");
+        return extname;
+    }
+```
+Apabila terdapat "." pada index pertama array hidden, maka extname akan menyimpan "Hidden" sebagai nama folder untuk menyimpan file berjenis hidden.
+* Untuk mengkategorikan file Unknown
+```c
+    else if (!dot){
+        strcpy(extname,"Unknown");
+        return extname;
+    }
+```
+Apabila tidak terdapat "." pada string, maka extname akan menyimpan "Unknown" sebagai nama folder untuk menyimpan file yang tidak memiliki ekstensi.
+* Untuk mengkategorikan file lainnya
+```c
+    else {
+        strcpy(extname,dot+1);
+        tolowerstr(extname);
+        return extname;
+    }
+```
+Case lainnya, apabila ekstensi lebih dari 1 maka extname akan menyimpan ekstensi pada titik terdepan sebagai nama folder.
+
+Perlu diperhatikan bahwa untuk soal ini ekstensi tidak case sensitive sehingga kita perlu mengubah ekstensi menjadi lower case
+```c
+void tolowerstr(char * str){
+    for(int i = 0; str[i]; i++){
+        str[i] = tolower(str[i]);
+    }
+}
+```
+
+*Fungsi untuk membuat folder dan memindahkan file*
+```c
+void* checkFolderAndCopy(void* args){
+    file_t * filenow = (file_t*)args;
+    char * extensionName = get_filename_ext(filenow->filename);
+    char * pathname = (char*)malloc(sizeof(char) * (PATH_MAX + PATH_MAX));
+    memset(pathname,0,sizeof(char) * (PATH_MAX + PATH_MAX));
+    strcpy(pathname,filenow->curDir);
+    strcat(pathname,"/");
+    strcat(pathname,extensionName);
+    mkdir(pathname,0777);
+    pthread_mutex_lock(&bufferlock);
+    strcat(pathname,"/");
+    char buffer[PATH_MAX + PATH_MAX];
+    memset(buffer,0,sizeof(buffer));
+    strcpy(buffer,pathname);
+    strcat(buffer,basename(filenow->filename));
+    printf("moving %s to %s\n",filenow->filename,buffer);
+    rename(filenow->filename,buffer);
+    pthread_mutex_unlock(&bufferlock);
+}
+```
+Untuk membuat folder digunakan `mkdir` dan untuk memindahkan file dari path awal ke path baru yang telah ditentukan menggunakan `rename`
+
+### Penyelesaian 3b, 3c : memindahkan file secara rekursif
+```c
+void listFilesRecursive(char *base, pthread_t *thread) {
+    char path[1000];
+    struct dirent *dp;
+    DIR *dir = opendir(base);
+
+    if (!dir)
+        return;
+
+    while ((dp = readdir(dir)) != NULL)
+    {
+        if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
+        {
+            // Construct new path from our base path
+            strcpy(path, base);
+            strcat(path, "/");
+            strcat(path, dp->d_name);
+            file_t * filenow = (file_t*)malloc(sizeof(file_t));
+            if (dp->d_type == DT_REG)
+            {
+                strcpy(filenow->filename, path);
+                strcpy(filenow->curDir,"/home/inez/sisop/soal-shift-sisop-modul-3-F01-2021/soal3");
+                printf("%s\n", path);
+                if (strcmp(path,"/home/inez/sisop/soal-shift-sisop-modul-3-F01-2021/soal3") != 0)
+                {
+                    pthread_create(&thread[ix],NULL,checkFolderAndCopy,(void*)filenow);
+                    sleep(1);
+                    ix++;
+                }
+            }
+            else if (dp->d_name[0] != '.')
+                listFilesRecursive(path, thread);
+        }
+    }
+
+    closedir(dir);
+}
+```
+Untuk memasukkan setiap path dalam thread nya masing-masing maka kita membuat thread dan path file akan disimpan dalam array `thread`.
+```c
+  if (strcmp(path,"/home/inez/sisop/soal-shift-sisop-modul-3-F01-2021/soal3") != 0)
+  {
+    pthread_create(&thread[ix],NULL,checkFolderAndCopy,(void*)filenow);
+    sleep(1);
+    ix++;
+  }
+```
+Jika path yang ditemukan masih berupa folder maka akan diabaikan dan dilakukan rekursif hingga menemukan file reguler.
+
+### A. Program menerima opsi -f seperti contoh di atas, jadi pengguna bisa menambahkan argumen file yang bisa dikategorikan sebanyak yang diinginkan oleh pengguna. 
+
+### B. Program juga dapat menerima opsi -d untuk melakukan pengkategorian pada suatu directory. Namun pada opsi -d ini, user hanya bisa memasukkan input 1 directory saja, tidak seperti file yang bebas menginput file sebanyak mungkin. 
+
+### C. Program ini menerima opsi *. Opsi ini akan mengkategorikan seluruh file yang ada di working directory ketika menjalankan program C tersebut.
+
+### D. Semua file harus berada di dalam folder, jika terdapat file yang tidak memiliki ekstensi, file disimpan dalam folder “Unknown”. Jika file hidden, masuk folder “Hidden”.
+
+### E. Setiap 1 file yang dikategorikan dioperasikan oleh 1 thread agar bisa berjalan secara paralel sehingga proses kategori bisa berjalan lebih cepat.
