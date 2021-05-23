@@ -270,6 +270,8 @@ if (!strcmp(choice, "add"))
     fclose(log);
 }
 ```
+server akan menerima command `add` dari client kemudian akan mencatat detail - detail dari file yang akan dimasukkan ke dalam `files.tsv`.
+setelah itu server akan membuat file baru pada `directory FILES` yang sama persis dengan file yang ada pada client.
 
 **CLIENT**
 ```C++
@@ -314,6 +316,7 @@ if (!strcmp(choice, "add"))
 
 }
 ```
+client akan mengirimkan command `add` ke server dan kemudian akan mengirim data - data file tersebut. kemudian isi dari file yang ingin dikirim tersebut di read dan di passing ke socket dan nanti server akan menerima isi dari file tersebut.
 
 ### D. membuat command download [filename].[extensi] untuk memindahkan file dari server ke client
 
@@ -390,6 +393,9 @@ else if (!strncmp(choice, "download", 8))
     }
 }
 ```
+server akan menerima command `download` serta nama file dan extensinya.
+kemudian nama file tersebut di cek pada `files.tsv`, jika ada maka server akan melakukan read data pada file tersebut dan kemudian data tersebut dikirimkan ke client.
+
 
 **CLIENT**
 ```C++
@@ -427,8 +433,335 @@ else if (!strncmp(choice, "download", 8))
     }
 }
 ```
+client akan mengirimkan command `download` beserta namafile dan extensi.
+jika nama file tersebut ditemukan, server akan membacanya dan mengirim ke client. pada saat ini client akan menerima datanya dan akan membuat file baru dengan nama file dan extensi yang sama.
 
-### E. 
+### E. Setelah itu, client juga dapat menghapus file yang tersimpan di server. Akan tetapi, Keverk takut file yang dibuang adalah file yang penting, maka file hanya akan diganti namanya menjadi ‘old-NamaFile.ekstensi’. Ketika file telah diubah namanya, maka row dari file tersebut di file.tsv akan terhapus.
+
+persoalan ini meminta kami untuk melakukan delete file pada server, tetapi tidak sepenuhnya terhapus. file pada server akan berubah nama menjadi `old-[namafile].[extensi]`. pada `files.tsv` juga akan terhapus detail - detail dari nama file tersebut.
+
+**SERVER**
+```C++
+else if (!strncmp(choice, "delete", 6))
+{
+    bzero(buffer, 1024);
+    char temp[1024] = {0}, buku[1024]= {0};
+    strcpy(temp, choice);
+    char* token;
+    char* save = temp;
+    for (int i = 0; token = strtok_r(save, " ", &save); i++)
+    {
+        strcpy(buku, token);
+    }
+    char pathserver[1024] = "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/server/FILES/";
+    strcat(pathserver, buku);
+
+    if (!strcmp(buku, ""))
+    {
+        strcpy(buffer, "masukkan nama buku");
+    }
+    else
+    {
+        FILE* cekfile = fopen(pathserver, "r");
+        if (!cekfile)
+        {
+            strcpy(buffer, "buku tidak ditemukan");
+        }
+        else
+        {
+            FILE* file1 = fopen("files.tsv", "r");
+            FILE* file2 = fopen("temp.tsv", "w");
+
+            char line[1024] = {0};
+            while (fgets(line, 1024, file1))
+            {
+                char motong[1024], pathbukunya[1024];
+                strcpy(motong, line);
+                char* potong = motong;
+                char* token;
+                for (int i = 0; token = strtok_r(potong, "\t", &potong); i++)
+                {
+                    strncpy(pathbukunya, token, strlen(token) - 1);
+                }
+                char templine[1024];
+                strcpy(templine, line);
+                if (strcmp(pathserver, pathbukunya))
+                {
+                    printf("pathserver : %s\npathbukunya : %s\n\n", pathserver, pathbukunya);
+                    fprintf(file2, "%s", templine);
+                }
+            }
+            fclose(file1);
+            fclose(file2);
+            remove("files.tsv");
+            rename("temp.tsv", "files.tsv");
+
+            char old[1024] = "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/server/FILES/old-";
+            strcat(old, buku);
+            rename(pathserver, old);
+
+            strcpy(buffer, "buku sukses dihapus");
+        }
+        fclose(cekfile);
+
+        FILE* log = fopen("running.log", "a")		;
+        fprintf(log, "Hapus : %s %s\n", buku, username);
+        fclose(log);				
+    }
+    write(sock, buffer, 1024);
+    bzero(buffer, 1024);
+}
+```
+
+**CLIENT**
+```C++
+else if (!strncmp(choice, "delete", 6))
+{
+    bzero(buffer, 1024);
+    valread = read(sock, buffer, 1024);
+    printf("%s\n", buffer);
+    bzero(buffer, 1024);
+}
+```
+
+### F. Client dapat melihat semua isi files.tsv dengan memanggil suatu perintah yang bernama see. Output dari perintah tersebut keluar dengan format. 
+
+untuk persoalan ini, kami membuka `files.tsv` lalu file tersebut diambil data - data yang dibutuhkan untuk ditampilkan.
+
+**SERVER**
+```C++
+else if (!strcmp(choice, "see"))
+{
+    // memset(buffer, '0', 1024);
+
+    FILE* fcek = fopen("files.tsv", "r");
+
+    char 	line[1024] = {0}, pub[1024] = {0}, thn[1024] = {0}, p_path[1024] = {0}, 
+            pathTemp[1024] = {0}, namafile[1024] = {0}, nama[1024] = {0}, extensi[1024] = {0};
+    int bukanawal = 0;
+    strcpy(buffer, "");
+    while (fgets(line, 1024, fcek))
+    {
+        // "/home/azhar416/sisop..../soal1/
+        // printf("ler\n");
+        // if (bukanawal) 
+        strcat(buffer, "\n\n");
+
+        // ngambil tiap tab
+        char* token;
+        char samlekom1[1024];
+        strcpy(samlekom1, line);
+        char* kumsalam = samlekom1;
+        for (int i = 0; token = strtok_r(kumsalam, "\t", &kumsalam); i++)
+        {
+            if (i == 0) 
+                strcpy(pub, token);
+            else if (i == 1) 
+                strcpy(thn, token);
+            else if (i == 2) 
+                strcpy(p_path, token);
+        }
+        strcpy(pathTemp, p_path);
+
+        // ngambil namafile.extensi
+        char samlekom2[1024];
+        strcpy(samlekom2, pathTemp);
+        kumsalam = samlekom2;
+        for (int i = 0; token = strtok_r(kumsalam, "/", &kumsalam); i++)
+        {
+            strcpy(namafile, token);
+        }
+
+        // misah namafile ama extensi
+        char samlekom3[1024];
+        strcpy(samlekom3, namafile);
+        kumsalam = samlekom3;
+        for (int i = 0; token = strtok_r(kumsalam, ".", &kumsalam); i++)
+        {
+            if (i == 0) 
+                strcpy(nama, token);
+            else if (i == 1) 
+            {
+                strcpy(extensi, ".");
+                strcat(extensi, token);
+            }
+        }
+        // printf("%s\n%s\n%s\n%s\n%s\n", nama, pub, thn, extensi, p_path);
+
+        strcat(buffer, "Nama : ");
+        strcat(buffer, nama);
+        strcat(buffer, "\nPublisher : ");
+        strcat(buffer, pub);
+        strcat(buffer, "\nTahun Publishing : ");
+        strcat(buffer, thn);
+        strcat(buffer, "\nEkstensi File : ");
+        strcat(buffer, extensi);
+        strcat(buffer, "File Path : ");
+        strcat(buffer, p_path);
+
+        bukanawal++;
+    }
+    // printf("%s", buffer);
+    write(sock, buffer, 1024);
+    bzero(buffer, 1024);
+    // memset(buffer, '0', 1024);
+}
+```
+
+**CLIENT**
+```C++
+else if (!strcmp(choice, "see"))
+{
+    bzero(buffer, 1024);
+    read(sock, buffer, 1024);
+    printf("%s", buffer);
+    bzero(buffer, 1024);
+}
+```
+
+### G. Aplikasi client juga dapat melakukan pencarian dengan memberikan suatu string. Hasilnya adalah semua nama file yang mengandung string tersebut. Format output seperti format output f.
+
+pada persoalaan ini, mirip seperti command `see` tetapi bedanya pada komparasi. pada command `find` yang akan ditampilkan hanya nama file yang dicari.
+
+**SERVER**
+```C++
+else if (!strncmp(choice, "find", 4))
+{
+    char temp[1024], namabuku[1024];
+    strcpy(temp, choice);
+    char* p_temp = temp;
+    char* token;
+    for (int i = 0; token = strtok_r(p_temp, " ", &p_temp); i++)
+    {
+        strcpy(namabuku, token);
+    }
+    if (!strcmp(namabuku, ""))
+    {
+        strcpy(buffer, "masukkan nama buku");
+    }
+    else
+    {
+        FILE* fcek = fopen("files.tsv", "r");
+
+        char 	line[1024] = {0}, pub[1024] = {0}, thn[1024] = {0}, p_path[1024] = {0}, 
+                pathTemp[1024] = {0}, namafile[1024] = {0}, nama[1024] = {0}, extensi[1024] = {0};
+        int bukanawal = 0;
+        strcpy(buffer, "");
+        while (fgets(line, 1024, fcek))
+        {
+            // "/home/azhar416/sisop..../soal1/
+            // printf("ler\n");
+            // if (bukanawal) 
+            strcat(buffer, "\n\n");
+
+            // ngambil tiap tab
+            char* token;
+            char samlekom1[1024];
+            strcpy(samlekom1, line);
+            char* kumsalam = samlekom1;
+            for (int i = 0; token = strtok_r(kumsalam, "\t", &kumsalam); i++)
+            {
+                if (i == 0) 
+                    strcpy(pub, token);
+                else if (i == 1) 
+                    strcpy(thn, token);
+                else if (i == 2) 
+                    strcpy(p_path, token);
+            }
+            strcpy(pathTemp, p_path);
+
+            // ngambil namafile.extensi
+            char samlekom2[1024];
+            strcpy(samlekom2, pathTemp);
+            kumsalam = samlekom2;
+            for (int i = 0; token = strtok_r(kumsalam, "/", &kumsalam); i++)
+            {
+                strcpy(namafile, token);
+            }
+
+            // misah namafile ama extensi
+            char samlekom3[1024];
+            strcpy(samlekom3, namafile);
+            kumsalam = samlekom3;
+            for (int i = 0; token = strtok_r(kumsalam, ".", &kumsalam); i++)
+            {
+                if (i == 0) 
+                    strcpy(nama, token);
+                else if (i == 1) 
+                {
+                    strcpy(extensi, ".");
+                    strcat(extensi, token);
+                }
+            }
+            // printf("%s\n%s\n%s\n%s\n%s\n", nama, pub, thn, extensi, p_path);
+            if (!strstr(nama, namabuku)) continue;
+
+            strcat(buffer, "Nama : ");
+            strcat(buffer, nama);
+            strcat(buffer, "\nPublisher : ");
+            strcat(buffer, pub);
+            strcat(buffer, "\nTahun Publishing : ");
+            strcat(buffer, thn);
+            strcat(buffer, "\nEkstensi File : ");
+            strcat(buffer, extensi);
+            strcat(buffer, "\nFile Path : ");
+            strcat(buffer, p_path);
+
+            bukanawal++;
+        }
+        if (!bukanawal)
+        {
+            strcpy(buffer, "buku tidak ditemukan");
+        }
+    }
+    write(sock, buffer, 1024);
+    bzero(buffer, 1024);
+}
+```
+
+**CLIENT**
+```C++
+else if (!strncmp(choice, "find", 4))
+{
+    bzero(buffer, 1024);
+    read(sock, buffer, 1024);
+    printf("%s\n", buffer);
+    bzero(buffer, 1024);
+}
+```
+
+### H. Dikarenakan Keverk waspada dengan pertambahan dan penghapusan file di server, maka Keverk membuat suatu log untuk server yang bernama running.log. Contoh isi dari log ini adalah
+
+**SERVER**
+```C++
+if (!strcmp(choice, "add"))
+{   
+    .
+    .
+    .
+    FILE* log = fopen("running.log", "a");
+    fprintf(log, "Tambah : %s %s\n", path, username);
+    fclose(log);
+}
+```
+```C++
+else if (!strncmp(choice, "delete", 6))
+{
+    if (!strcmp(buku, ""))
+    {
+        strcpy(buffer, "masukkan nama buku");
+    }
+    else
+    {
+        .
+        .
+        .
+        FILE* log = fopen("running.log", "a")		;
+        fprintf(log, "Hapus : %s %s\n", buku, username);
+        fclose(log);
+    }
+}
+```
 
 ## Soal Nomor 2
 Crypto (kamu) adalah teman Loba. Suatu pagi, Crypto melihat Loba yang sedang kewalahan mengerjakan tugas dari bosnya. Karena Crypto adalah orang yang sangat menyukai tantangan, dia ingin membantu Loba mengerjakan tugasnya. Detil dari tugas tersebut adalah:
