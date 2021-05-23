@@ -1,13 +1,441 @@
 # soal-shift-sisop-modul-3-F01-2021
 
+## Soal Nomor 1
+Keverk adalah orang yang cukup ambisius dan terkenal di angkatannya. Sebelum dia menjadi ketua departemen di HMTC, dia pernah mengerjakan suatu proyek dimana keverk tersebut meminta untuk membuat server database buku. Proyek ini diminta agar dapat digunakan oleh pemilik aplikasi dan diharapkan bantuannya dari pengguna aplikasi ini. 
 
+### A. intinya server bisa multi-connections, sama pas client terkonek ke server tampilkan pilihan LOGIN atau REGISTER. Ketika register username dan password disimpan pada file akun.txt dengan format [username]:[password]
+
+Untuk soal ini, kami menggunakan 
+```C++
+while( (new_socket = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
+{
+    puts("Connection accepted");
+    
+    pthread_t sniffer_thread;
+    new_sock = malloc(1);
+    *new_sock = new_socket;
+    
+    if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0)
+    {
+        perror("could not create thread");
+        return 1;
+    }
+    
+    //Now join the thread , so that we dont terminate before the thread
+    pthread_join( sniffer_thread , NULL);
+    puts("Handler assigned");
+}
+```
+kegunaan `while` tersebut agar server selalu jalan dan ketika client terputus, maka server akan kembali mencari client lain. 
+
+Untuk REGISTER (Pilihan 1), akan membuka file akun.txt dan melakukan append.
+```C++
+.
+.
+.
+// SERVER
+if (!(strcmp(choice, "1")))
+{
+    FILE* fp = fopen("akun.txt", "a");
+    // printf("Masuk 1\n");
+    sprintf(menu, "Username : \e[s\n\e[u");
+    write(sock, menu, 1024); 
+    // memset(menu, '0', 1024);
+    bzero(menu, 1024);
+    valread = read(sock, username, 1024);
+    if (valread < 1) return 0;
+
+    sprintf(menu, "Password : \e[s\n\e[u");
+    write(sock, menu, 1024); 
+    // memset(menu, '0', 1024);
+    bzero(menu, 1024);
+    valread = read(sock, password, 1024);
+    if (valread < 1) return 0;
+
+    fprintf(fp, "%s:%s\n", username, password);
+    fclose(fp);
+}
+.
+.
+.
+```
+sementara untuk REGISTER pada client, 
+```C++
+.
+.
+.
+if (!(strcmp(choice, "1")))
+{
+    valread = read(sock, buffer, 1024);
+    printf("%s", buffer);
+    scanf(" %[^\n]s", username);
+    write(sock, username, 1024);
+
+    valread = read(sock, buffer, 1024);
+    printf("%s", buffer); 
+    scanf(" %[^\n]s", password);
+    write(sock, password, 1024);
+}
+.
+.
+.
+```
+
+Untuk LOGIN (pilihan 2), akan membuka file akun.txt dan melakukan read serta komparasi untuk username dan password.
+**SERVER**
+```C++
+.
+.
+.
+else if (!(strcmp(choice, "2")))
+{
+    char* aut = "0";
+    FILE* fp = fopen("akun.txt", "r");
+    while (aut == "0")
+    {
+        // memset(menu, '0', 1024);
+        bzero(menu, 1024);
+        // printf("Masuk 2\n");
+        sprintf(menu, "Username : \e[s\n\e[u");
+        // printf("%s\n", menu);
+        int ler = write(sock, menu, 1024);
+        // if (ler == 0) printf("write\n");
+        // memset(menu, '0', 1024);
+        bzero(menu, 1024);
+        valread = read(sock, username, 1024);
+        if (valread < 1) return 0;
+
+        sprintf(menu, "Password : \e[s\n\e[u");
+        write(sock, menu, 1024); 
+        // memset(menu, '0', 1024);
+        bzero(menu, 1024);
+        valread = read(sock, password, 1024); 
+        if (valread < 1) return 0;
+
+        while (fgets(buffer, 1024, fp) != NULL && aut == "0") 
+        {
+            char f_username[1024], f_password[1024];
+            char *token = strtok(buffer, ":");
+            strcpy(f_username, token);
+            token = strtok(NULL, "\n");
+            strcpy(f_password, token);
+            
+            if (strcmp(username, f_username) == 0 && strcmp(password, f_password) == 0)
+            {
+                // printf("MASUK!!!\n");
+                aut = "1";
+                write(sock, aut, 1024);
+                // printf("%s", aut);
+            }
+        }
+    }
+    .
+    .
+    .
+```
+**CLIENT**
+```C++
+.
+.
+.
+else if (!(strcmp(choice, "2")))
+{
+    while (1)
+    {
+        char aut[1024] = {0};
+        while (strcmp(aut, "") == 0)
+        {
+            // printf("masuk 2\n");
+            bzero(buffer, 1024);
+            valread = read(sock, buffer, 1024);
+            printf("%s", buffer);
+            scanf(" %[^\n]s", username);
+            write(sock, username, 1024);
+
+            bzero(buffer, 1024);
+            valread = read(sock, buffer, 1024);
+            printf("%s", buffer); 
+            scanf(" %[^\n]s", password);
+            write(sock, password, 1024);
+
+            valread = read(sock, aut, 1024);
+        }
+    .
+    .
+    .
+```
+jika username dan password yang dimasukkan oleh client sesuai, maka variabel `aut` akan berubah menjadi 1 yang berarti login telah berhasil.
+
+### B. Sistem memiliki sebuah database yang bernama files.tsv. Isi dari files.tsv ini adalah path file saat berada di server, publisher, dan tahun publikasi. Setiap penambahan dan penghapusan file pada folder file yang bernama  FILES pada server akan memengaruhi isi dari files.tsv. Folder FILES otomatis dibuat saat server dijalankan. 
+
+Untuk persoalan ini kita diminta untuk setiap command `add` dan juga `delete` akan merubah isi dari `files.tsv`.
+
+**SERVER**
+```C++
+if (!strcmp(choice, "add"))
+{
+    FILE* fp_1 = fopen("files.tsv", "a");
+    .
+    .
+    .
+    fprintf(fp_1, "%s\t%s\t%s\n", publisher, tahun, pathServer);
+    fclose(fp_1);
+    .
+    .
+    .
+}
+```
+
+**SERVER**
+```C++
+else if (!strncmp(choice, "delete", 6))
+{
+    .
+    .
+    .
+
+            FILE* file1 = fopen("files.tsv", "r");
+            FILE* file2 = fopen("temp.tsv", "w");
+            .
+            .
+            .
+            fclose(file1);
+            fclose(file2);
+            remove("files.tsv");
+            rename("temp.tsv", "files.tsv");
+    .
+    .
+    .
+}
+```
+
+### C. membuat command ADD buat nambahinh file dari client ke server
+
+**SERVER**
+```C++
+if (!strcmp(choice, "add"))
+{
+    FILE* fp_1 = fopen("files.tsv", "a");
+    char publisher[1024] = {0};
+    char tahun[1024] = {0};
+    char path[1024] = {0};
+
+    sprintf(publisher, "Publisher : \e[s\n\e[u");
+    write(sock, publisher, 1024);
+    // memset(publisher, '0', 1024);
+    bzero(publisher, 1024);
+    valread = read(sock, publisher, 1024);
+    if (valread < 1) return 0;
+    
+    sprintf(tahun, "Tahun Publikasi : \e[s\n\e[u");
+    write(sock, tahun, 1024);
+    // memset(tahun, '0', 1024);
+    bzero(tahun, 1024);
+    valread = read(sock, tahun, 1024);
+    if (valread < 1) return 0;
+
+    sprintf(path, "Filepath : \e[s\n\e[u");
+    write(sock, path, 1024);
+    // memset(path, '0', 1024);
+    bzero(path, 1024);
+    valread = read(sock, path, 1024);
+    if (valread < 1) return 0;
+    
+    // transfer file
+    mkdir("FILES", 0777);
+    char pathServer[1024];
+    sprintf(pathServer, "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/server/FILES/");
+    strcat(pathServer, path);
+    FILE* file_create = fopen(pathServer, "w");
+
+    // memset(buffer, '0', 1024);
+    bzero(buffer, 1024);
+    valread = read(sock, buffer, 1024);
+    if (valread < 1) return 0;
+    fprintf(file_create, "%s", buffer);
+    // fprintf(file_create, "\n");
+
+    fclose(file_create);
+
+    // memset(buffer, '0', 1024);
+    bzero(buffer, 1024);
+    sprintf(buffer, "\nFile Terkirim\n");
+    write(sock, buffer, 1024);
+
+    fprintf(fp_1, "%s\t%s\t%s\n", publisher, tahun, pathServer);
+    fclose(fp_1);
+
+    FILE* log = fopen("running.log", "a");
+    fprintf(log, "Tambah : %s %s\n", path, username);
+    fclose(log);
+}
+```
+
+**CLIENT**
+```C++
+if (!strcmp(choice, "add"))
+{
+    char kirim[1024] = {0};
+    valread = read(sock, buffer, 1024);
+    printf("%s", buffer);
+    // memset(buffer, '0', 1024);
+    bzero(buffer, 1024);
+    scanf("%s", kirim);
+    write(sock, kirim, 1024);
+    // memset(kirim, '0', 1024);
+    bzero(buffer, 1024);
+    
+    valread = read(sock, buffer, 1024);
+    printf("%s", buffer);
+    // memset(buffer, '0', 1024);
+    bzero(buffer, 1024);
+    scanf("%s", kirim);
+    write(sock, kirim, 1024);
+    // memset(kirim, '0', 1024);
+    bzero(buffer, 1024);
+    
+    valread = read(sock, buffer, 1024);
+    printf("%s", buffer);
+    scanf("%s", kirim);
+    write(sock, kirim, 1024);
+    // memset(kirim, '0', 1024); // file.extensi
+    printf("%s", kirim);
+
+    FILE* file = fopen(kirim, "rb");
+    char data[1024] = {0};
+
+    while(fgets(data, 1024, file) != NULL)
+    {
+        write(sock, data, strlen(data));
+        // memset(data, '0', 1024);
+        bzero(data, 1024);
+    }
+    fclose(file);
+
+}
+```
+
+### D. membuat command download [filename].[extensi] untuk memindahkan file dari server ke client
+
+**SERVER**
+```C++
+else if (!strncmp(choice, "download", 8))
+{
+    bzero(buffer, 1024);
+    char temp[1024], buku[1024];
+    strcpy(temp, choice);
+    // printf("CHOICE : %s\n", choice);
+    char* save = temp;
+    char* token;
+    for (int i = 0; token = strtok_r(save, " ", &save); i++)
+    {
+        bzero(buku, 1024);
+        strcpy(buku, token);
+    }
+    int found = 0;
+    printf("buku : %s\n", buku);
+    
+    if (!strcmp(buku, ""))
+    {
+        strcpy(buffer, "masukkan nama buku");
+        write(sock, buffer, 1024);
+        bzero(buffer, 1024);
+    }
+    else
+    {
+        char pathserver[1024] = "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/server/FILES/";
+        strcat(pathserver, buku);
+        printf("pathserver : %s\n", pathserver);
+
+        FILE* file = fopen("files.tsv", "r");
+        char line[1024];
+
+        while(fgets(line, 1024, file))
+        {
+            char temp[1024] = {0}, data[1024] = {0};
+            strcpy(temp, line);
+            char* t;
+            char* simpen = temp;
+            for (int i = 0; t = strtok_r(simpen, "\t", &simpen); i++)
+            {
+                strncpy(data, t, strlen(t) - 1);
+            }
+            printf("data : %s\n", data);
+            if (!strcmp(pathserver, data))
+            {
+                found = 1;
+                break;
+            }
+        }
+        if (found)
+        {
+            FILE* ffile = fopen(pathserver, "rb");
+            char dats[1024] = {0};
+            
+            while (fgets(dats, 1024, ffile) != NULL)
+            {
+                write(sock, dats, strlen(dats));
+                bzero(dats, 1024);
+            }
+            fclose(ffile);
+
+        }
+        else
+        {
+            strcpy(buffer, "buku tidak ditemukan");
+            write(sock, buffer, 1024);
+            bzero(buffer, 1024);
+        }
+
+    }
+}
+```
+
+**CLIENT**
+```C++
+else if (!strncmp(choice, "download", 8))
+{
+    // printf("flag1\n");
+    char buku[1024];
+    strcpy(buku, choice);
+    char* token;
+    char* simpen = buku;
+    for (int i = 0; token = strtok_r(simpen, " ", &simpen); i++)
+    {
+        // printf("flag2\n");
+        bzero(buffer, 1024);
+        strcpy(buffer, token);
+    }
+    char pathclient[1024] = "/home/azhar416/soal-shift-sisop-modul-3-F01-2021/soal1/client/";
+    strcat(pathclient, buffer);
+    
+    bzero(buffer, 1024);
+    if (strcmp(buffer, "buku tidak ditemukan") && strcmp(buffer, "masukkan nama buku"))
+    {
+        FILE* file = fopen(pathclient, "w");
+
+        valread = read(sock, buffer, 1024);
+        fprintf(file, "%s", buffer);
+    
+
+        fclose(file);
+        printf("buku telah diunduh\n\n");
+    }
+    else
+    {
+        printf("%s\n", buffer);
+    }
+}
+```
+
+### E. 
 
 ## Soal Nomor 2
 Crypto (kamu) adalah teman Loba. Suatu pagi, Crypto melihat Loba yang sedang kewalahan mengerjakan tugas dari bosnya. Karena Crypto adalah orang yang sangat menyukai tantangan, dia ingin membantu Loba mengerjakan tugasnya. Detil dari tugas tersebut adalah:
 
 ### A. Membuat program perkalian matrix (4x3 dengan 3x6) dan menampilkan hasilnya. Matriks nantinya akan berisi angka 1-20 (tidak perlu dibuat filter angka).
 
-Pada kasus ini kami mendklarasikan matriks A (4*3) dan B(3*6) untuk melakukan input dan menampilkan data tersebut menggunakan `for`. 
+Pada kasus ini kami mendklarasikan matriks `A (4*3)` dan `B(3*6)` untuk melakukan input dan menampilkan data tersebut menggunakan `for`. 
 Berikut adalah implementasi untuk input data:
 ```
   printf("Masukan data Matrix:\n");
