@@ -344,11 +344,83 @@ Untuk memasukkan setiap path dalam thread nya masing-masing maka kita membuat th
 Jika path yang ditemukan masih berupa folder maka akan diabaikan dan dilakukan rekursif hingga menemukan file reguler.
 
 ### A. Program menerima opsi -f seperti contoh di atas, jadi pengguna bisa menambahkan argumen file yang bisa dikategorikan sebanyak yang diinginkan oleh pengguna. 
+```c
+    if(strcmp(argv[1],"-f")==0){
+        //pthread_t copy_thread[argc];
+        for(int i=2;i<argc;i++){
+            file_t * filenow = (file_t*)malloc(sizeof(file_t));
+            strcpy(filenow->curDir, curDir);
+            char * copy = (char*)malloc(sizeof(char)*strlen(argv[i]));
+            memset(copy,0,sizeof(char)*strlen(argv[i]));
+            strcpy(copy,argv[i]);
+            strcpy(filenow->filename, copy);
+
+            int iret = pthread_create(&copy_thread[i],NULL,checkFolderAndCopy,(void*)filenow);
+            // if(is_regular_file(argv[i])){
+            if(iret){
+                perror("thread1");
+                //iret;
+                printf("File %d: Sad, gagal :(\n", i-1);
+                exit(EXIT_FAILURE);
+            }
+            else {
+                printf("File %d: Berhasil Dikategorikan\n", i - 1);
+                sleep(1);
+                ix++;
+            }
+        }
+        for(int i=2;i<argc;i++){
+            pthread_join(copy_thread[i],NULL);
+        }
+    }
+```
+Apabila argumen yang diberikan yaitu -f dan path nya sesuai maka akan dimasukkan dalam thread dan menjalankan fungsi **checkFolderAndCopy**. Thread akan dijalankan bersamaan dengan pthread_join.
 
 ### B. Program juga dapat menerima opsi -d untuk melakukan pengkategorian pada suatu directory. Namun pada opsi -d ini, user hanya bisa memasukkan input 1 directory saja, tidak seperti file yang bebas menginput file sebanyak mungkin. 
+```c
+    else if(strcmp(argv[1],"-d")==0){
+        chdir(argv[2]);
+        int count=0;
+        DIR *d;
+        struct dirent *dir;
+        d = opendir(".");
+        if (d){
+            while ((dir = readdir(d)) != NULL){
+                if(is_regular_file(dir->d_name)){
+                    count++;
+                }
+            }
+            closedir(d);
+        }
+
+        int i=0;
+        d = opendir(".");
+        if (d){
+            listFilesRecursive(argv[2], copy_thread);
+            if (count == 0)
+                printf("Yah, gagal disimpan :(\n");
+            
+            else printf("Direktori Sukses Disimpan!\n");
+        }
+    }
+```
+Apabila argumen yang diberikan yaitu -d dan path nya sesuai maka akan dimasukkan dalam thread dan menjalankan fungsi **listFilesRecursive** untuk menyimpan path dalam array. Nantinya, elemen pada array tersebut akan dibuatkan thread dan menjalankan fungsi **checkFolderAndCopy**.
 
 ### C. Program ini menerima opsi *. Opsi ini akan mengkategorikan seluruh file yang ada di working directory ketika menjalankan program C tersebut.
+```c
+    else if(strcmp(argv[1],"*")==0){
+        int count=0;
+        DIR *d;
+        struct dirent *dir;
+        d = opendir(curDir);
+        if (d){
+            listFilesRecursive(curDir, copy_thread);
+        }
+    }
+```
+Apabila argumen yang diberikan yaitu * maka akan menyimpan path current working directory. Lalu menjalankan proses eperti nomor 3b yaitu memanggil fungsi **listFilesRecursive** untuk menyimpan path dalam array. Nantinya, elemen pada array tersebut akan dibuatkan thread dan menjalankan fungsi **checkFolderAndCopy**.
 
-### D. Semua file harus berada di dalam folder, jika terdapat file yang tidak memiliki ekstensi, file disimpan dalam folder “Unknown”. Jika file hidden, masuk folder “Hidden”.
+### D. dan E.
+Untuk kedua sub nomor ini sudah dijelaskan pada penjelasan diatas.
 
-### E. Setiap 1 file yang dikategorikan dioperasikan oleh 1 thread agar bisa berjalan secara paralel sehingga proses kategori bisa berjalan lebih cepat.
+
